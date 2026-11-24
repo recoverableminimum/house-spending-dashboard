@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>House Spending</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9;margin:0;padding:12px}
+h1{margin:0 0 8px;font-size:1.4rem}
+.controls{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+button,select{background:#334155;color:#f1f5f9;border:none;border-radius:6px;padding:6px 10px;cursor:pointer}
+button.active{background:#38bdf8;color:#0f172a;font-weight:600}
+.card{background:#1e293b;border-radius:10px;padding:12px;margin:10px 0}
+.big{font-size:1.6rem;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:0.8rem}
+th,td{padding:4px 6px;text-align:right;border-bottom:1px solid #334155}
+th:first-child,td:first-child{text-align:left}
+.bar{height:18px;background:#334155;border-radius:4px;margin:2px 0;overflow:hidden}
+.bar span{display:block;height:100%;background:#38bdf8}
+.note{font-size:0.8rem;color:#94a3b8;margin-top:12px}
+</style>
+</head>
+<body>
+<h1>House Spending Explorer</h1>
+<div class="controls">
+  <button data-y="2024" class="active">2024</button>
+  <button data-y="2025" class="active">2025</button>
+  <button data-y="2026" class="active">2026</button>
+  <button data-y="2027">2027</button>
+  <select id="cat">
+    <option value="all">All</option>
+    <option>Housing & Fixed</option>
+    <option>Groceries & Household</option>
+    <option>Other</option>
+    <option>Transport</option>
+    <option>Amazon</option>
+    <option>Eating Out</option>
+    <option>Kids & Childcare</option>
+  </select>
+</div>
+<div class="card">
+  <div id="summary" class="big">—</div>
+  <div id="detail" style="color:#94a3b8;font-size:0.85rem"></div>
+</div>
+<div class="card">
+  <div id="bars"></div>
+</div>
+<div class="card">
+  <table id="table"></table>
+</div>
+<div class="card">
+  <table id="months"></table>
+</div>
+<div class="card" id="merchants"></div>
+<div class="note">2027: mortgage £593 Jan–Feb then £805. Other categories +4% on 2026 annualised. Transfers excluded. 2026 ends 20 Nov.</div>
+<script>
+const DATA = PLACEHOLDER_DATA;
+draw();
+</script>
+</body>
+</html>
