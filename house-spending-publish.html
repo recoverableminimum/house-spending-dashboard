@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>House Spending</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9;margin:0;padding:12px}
+h1{margin:0 0 8px;font-size:1.4rem}
+.controls{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+button,select{background:#334155;color:#f1f5f9;border:none;border-radius:6px;padding:6px 10px;cursor:pointer}
+button.active{background:#38bdf8;color:#0f172a;font-weight:600}
+.card{background:#1e293b;border-radius:10px;padding:12px;margin:10px 0}
+.big{font-size:1.6rem;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:0.8rem}
+th,td{padding:4px 6px;text-align:right;border-bottom:1px solid #334155}
+th:first-child,td:first-child{text-align:left}
+.bar{height:18px;background:#334155;border-radius:4px;margin:2px 0;overflow:hidden}
+.bar span{display:block;height:100%;background:#38bdf8}
+.note{font-size:0.8rem;color:#94a3b8;margin-top:12px}
+</style>
+</head>
+<body>
+<h1>House Spending Explorer</h1>
+<div class="controls">
+  <button data-y="2024" class="active">2024</button>
+  <button data-y="2025" class="active">2025</button>
+  <button data-y="2026" class="active">2026</button>
+  <button data-y="2027">2027</button>
+  <select id="cat">
+    <option value="all">All</option>
+    <option>Housing & Fixed</option>
+    <option>Groceries & Household</option>
+    <option>Other</option>
+    <option>Transport</option>
+    <option>Amazon</option>
+    <option>Eating Out</option>
+    <option>Kids & Childcare</option>
+  </select>
+</div>
+<div class="card">
+  <div id="summary" class="big">—</div>
+  <div id="detail" style="color:#94a3b8;font-size:0.85rem"></div>
+</div>
+<div class="card">
+  <div id="bars"></div>
+</div>
+<div class="card">
+  <table id="table"></table>
+</div>
+<div class="card">
+  <table id="months"></table>
+</div>
+<div class="card" id="merchants"></div>
+<div class="note">2027: mortgage £593 Jan–Feb then £805. Other categories +4% on 2026 annualised. Transfers excluded. 2026 ends 20 Nov.</div>
+<script>
+const DATA = {"monthly": {"2024": [{"Month": "2024-01", "Category": "Groceries & Household", "Debit Amount": 311.01}, {"Month": "2024-01", "Category": "Housing & Fixed", "Debit Amount": 972.95}, {"Month": "2024-01", "Category": "Other", "Debit Amount": 196.99}, {"Month": "2024-01", "Category": "Transport", "Debit Amount": 92.86}, {"Month": "2024-02", "Category": "Eating Out", "Debit Amount": 4.85}, {"Month": "2024-02", "Category": "Groceries & Household", "Debit Amount": 243.52}, {"Month": "2024-02", "Category": "Housing & Fixed", "Debit Amount": 798.24}, {"Month": "2024-02", "Category": "Kids & Childcare", "Debit Amount": 636.0}, {"Month": "2024-02", "Category": "Other", "Debit Amount": 126.2}, {"Month": "2024-02", "Category": "Transport", "Debit Amount": 102.0}, {"Month": "2024-03", "Category": "Eating Out", "Debit Amount": 27.2}, {"Month": "2024-03", "Category": "Groceries & Household", "Debit Amount": 269.34}, {"Month": "2024-03", "Category": "Housing & Fixed", "Debit Amount": 715.4}, {"Month": "2024-03", "Category": "Kids & Childcare", "Debit Amount": 318.0}, {"Month": "2024-03", "Category": "Other", "Debit Amount": 54.04}, {"Month": "2024-03", "Category": "Transfers", "Debit Amount": 100.0}, {"Month": "2024-03", "Category": "Transport", "Debit Amount": 40.0}, {"Month": "2024-04", "Category": "Eating Out", "Debit Amount": 55.52}, {"Month": "2024-04", "Category": "Groceries & Household", "Debit Amount": 359.99}, {"Month": "2024-04", "Category": "Housing & Fixed", "Debit Amount": 969.32}, {"Month": "2024-04", "Category": "Kids & Childcare", "Debit Amount": 135.0}, {"Month": "2024-04", "Category": "Other", "Debit Amount": 40.05}, {"Month": "2024-04", "Category": "Transfers", "Debit Amount": 176.8}, {"Month": "2024-04", "Category": "Transport", "Debit Amount": 74.0}, {"Month": "2024-05", "Category": "Eating Out", "Debit Amount": 31.64}, {"Month": "2024-05", "Category": "Groceries & Household", "Debit Amount": 288.67}, {"Month": "2024-05", "Category": "Housing & Fixed", "Debit Amount": 967.18}, {"Month": "2024-05", "Category": "Kids & Childcare", "Debit Amount": 157.0}, {"Month": "2024-05", "Category": "Other", "Debit Amount": 16.1}, {"Month": "2024-05", "Category": "Transport", "Debit Amount": 62.0}, {"Month": "2024-06", "Category": "Eating Out", "Debit Amount": 17.05}, {"Month": "2024-06", "Category": "Groceries & Household", "Debit Amount": 275.08}, {"Month": "2024-06", "Category": "Housing & Fixed", "Debit Amount": 967.18}, {"Month": "2024-06", "Category": "Kids & Childcare", "Debit Amount": 135.0}, {"Month": "2024-06", "Category": "Other", "Debit Amount": 613.46}, {"Month": "2024-06", "Category": "Transport", "Debit Amount": 36.0}, {"Month": "2024-07", "Category": "Eating Out", "Debit Amount": 215.98}, {"Month": "2024-07", "Category": "Groceries & Household", "Debit Amount": 269.39}, {"Month": "2024-07", "Category": "Housing & Fixed", "Debit Amount": 920.09}, {"Month": "2024-07", "Category": "Kids & Childcare", "Debit Amount": 150.0}, {"Month": "2024-07", "Category": "Other", "Debit Amount": 73.67}, {"Month": "2024-07", "Category": "Transport", "Debit Amount": 68.0}, {"Month": "2024-08", "Category": "Eating Out", "Debit Amount": 43.91}, {"Month": "2024-08", "Category": "Groceries & Household", "Debit Amount": 223.24}, {"Month": "2024-08", "Category": "Housing & Fixed", "Debit Amount": 920.09}, {"Month": "2024-08", "Category": "Kids & Childcare", "Debit Amount": 120.0}, {"Month": "2024-08", "Category": "Other", "Debit Amount": 181.75}, {"Month": "2024-08", "Category": "Transport", "Debit Amount": 40.0}, {"Month": "2024-09", "Category": "Eating Out", "Debit Amount": 4.25}, {"Month": "2024-09", "Category": "Groceries & Household", "Debit Amount": 406.68}, {"Month": "2024-09", "Category": "Housing & Fixed", "Debit Amount": 920.09}, {"Month": "2024-09", "Category": "Kids & Childcare", "Debit Amount": 141.98}, {"Month": "2024-09", "Category": "Other", "Debit Amount": 55.75}, {"Month": "2024-09", "Category": "Transfers", "Debit Amount": 180.2}, {"Month": "2024-09", "Category": "Transport", "Debit Amount": 68.0}, {"Month": "2024-10", "Category": "Amazon", "Debit Amount": 28.09}, {"Month": "2024-10", "Category": "Eating Out", "Debit Amount": 40.35}, {"Month": "2024-10", "Category": "Groceries & Household", "Debit Amount": 212.96}, {"Month": "2024-10", "Category": "Housing & Fixed", "Debit Amount": 920.09}, {"Month": "2024-10", "Category": "Kids & Childcare", "Debit Amount": 150.0}, {"Month": "2024-10", "Category": "Other", "Debit Amount": 644.98}, {"Month": "2024-10", "Category": "Transport", "Debit Amount": 44.0}, {"Month": "2024-11", "Category": "Amazon", "Debit Amount": 312.46}, {"Month": "2024-11", "Category": "Eating Out", "Debit Amount": 78.23}, {"Month": "2024-11", "Category": "Groceries & Household", "Debit Amount": 255.88}, {"Month": "2024-11", "Category": "Housing & Fixed", "Debit Amount": 923.13}, {"Month": "2024-11", "Category": "Kids & Childcare", "Debit Amount": 127.1}, {"Month": "2024-11", "Category": "Other", "Debit Amount": 148.34}, {"Month": "2024-11", "Category": "Transport", "Debit Amount": 86.7}, {"Month": "2024-12", "Category": "Eating Out", "Debit Amount": 108.69}, {"Month": "2024-12", "Category": "Groceries & Household", "Debit Amount": 295.27}, {"Month": "2024-12", "Category": "Housing & Fixed", "Debit Amount": 916.59}, {"Month": "2024-12", "Category": "Kids & Childcare", "Debit Amount": 105.0}, {"Month": "2024-12", "Category": "Other", "Debit Amount": 223.46}, {"Month": "2024-12", "Category": "Transfers", "Debit Amount": 25.0}, {"Month": "2024-12", "Category": "Transport", "Debit Amount": 64.0}], "2025": [{"Month": "2025-01", "Category": "Eating Out", "Debit Amount": 30.74}, {"Month": "2025-01", "Category": "Groceries & Household", "Debit Amount": 311.73}, {"Month": "2025-01", "Category": "Housing & Fixed", "Debit Amount": 764.59}, {"Month": "2025-01", "Category": "Kids & Childcare", "Debit Amount": 132.0}, {"Month": "2025-01", "Category": "Other", "Debit Amount": 70.99}, {"Month": "2025-01", "Category": "Transport", "Debit Amount": 64.0}, {"Month": "2025-02", "Category": "Eating Out", "Debit Amount": 59.52}, {"Month": "2025-02", "Category": "Groceries & Household", "Debit Amount": 277.44}, {"Month": "2025-02", "Category": "Housing & Fixed", "Debit Amount": 788.18}, {"Month": "2025-02", "Category": "Kids & Childcare", "Debit Amount": 120.0}, {"Month": "2025-02", "Category": "Other", "Debit Amount": 153.87}, {"Month": "2025-02", "Category": "Transport", "Debit Amount": 87.0}, {"Month": "2025-03", "Category": "Eating Out", "Debit Amount": 49.55}, {"Month": "2025-03", "Category": "Groceries & Household", "Debit Amount": 336.6}, {"Month": "2025-03", "Category": "Housing & Fixed", "Debit Amount": 1118.23}, {"Month": "2025-03", "Category": "Kids & Childcare", "Debit Amount": 485.0}, {"Month": "2025-03", "Category": "Other", "Debit Amount": 15.82}, {"Month": "2025-03", "Category": "Transport", "Debit Amount": 72.0}, {"Month": "2025-04", "Category": "Eating Out", "Debit Amount": 6.7}, {"Month": "2025-04", "Category": "Groceries & Household", "Debit Amount": 213.07}, {"Month": "2025-04", "Category": "Housing & Fixed", "Debit Amount": 791.68}, {"Month": "2025-04", "Category": "Other", "Debit Amount": 2025.76}, {"Month": "2025-04", "Category": "Transfers", "Debit Amount": 152.64}, {"Month": "2025-04", "Category": "Transport", "Debit Amount": 83.5}, {"Month": "2025-05", "Category": "Eating Out", "Debit Amount": 139.0}, {"Month": "2025-05", "Category": "Groceries & Household", "Debit Amount": 304.57}, {"Month": "2025-05", "Category": "Housing & Fixed", "Debit Amount": 983.18}, {"Month": "2025-05", "Category": "Other", "Debit Amount": 190.29}, {"Month": "2025-05", "Category": "Transport", "Debit Amount": 179.29}, {"Month": "2025-06", "Category": "Eating Out", "Debit Amount": 65.12}, {"Month": "2025-06", "Category": "Groceries & Household", "Debit Amount": 339.27}, {"Month": "2025-06", "Category": "Housing & Fixed", "Debit Amount": 983.18}, {"Month": "2025-06", "Category": "Kids & Childcare", "Debit Amount": 75.5}, {"Month": "2025-06", "Category": "Other", "Debit Amount": 254.15}, {"Month": "2025-06", "Category": "Transport", "Debit Amount": 89.99}, {"Month": "2025-07", "Category": "Amazon", "Debit Amount": 226.51}, {"Month": "2025-07", "Category": "Eating Out", "Debit Amount": 31.2}, {"Month": "2025-07", "Category": "Groceries & Household", "Debit Amount": 353.59}, {"Month": "2025-07", "Category": "Housing & Fixed", "Debit Amount": 983.18}, {"Month": "2025-07", "Category": "Kids & Childcare", "Debit Amount": 158.48}, {"Month": "2025-07", "Category": "Other", "Debit Amount": 132.16}, {"Month": "2025-07", "Category": "Transport", "Debit Amount": 67.5}, {"Month": "2025-08", "Category": "Amazon", "Debit Amount": 68.9}, {"Month": "2025-08", "Category": "Eating Out", "Debit Amount": 13.28}, {"Month": "2025-08", "Category": "Groceries & Household", "Debit Amount": 297.44}, {"Month": "2025-08", "Category": "Housing & Fixed", "Debit Amount": 1196.68}, {"Month": "2025-08", "Category": "Other", "Debit Amount": 551.01}, {"Month": "2025-08", "Category": "Transport", "Debit Amount": 75.89}, {"Month": "2025-09", "Category": "Amazon", "Debit Amount": 71.48}, {"Month": "2025-09", "Category": "Eating Out", "Debit Amount": 25.08}, {"Month": "2025-09", "Category": "Groceries & Household", "Debit Amount": 322.23}, {"Month": "2025-09", "Category": "Housing & Fixed", "Debit Amount": 807.18}, {"Month": "2025-09", "Category": "Other", "Debit Amount": 27.9}, {"Month": "2025-09", "Category": "Transfers", "Debit Amount": 17.0}, {"Month": "2025-09", "Category": "Transport", "Debit Amount": 68.0}, {"Month": "2025-10", "Category": "Amazon", "Debit Amount": 245.84}, {"Month": "2025-10", "Category": "Eating Out", "Debit Amount": 238.88}, {"Month": "2025-10", "Category": "Groceries & Household", "Debit Amount": 457.73}, {"Month": "2025-10", "Category": "Housing & Fixed", "Debit Amount": 983.18}, {"Month": "2025-10", "Category": "Other", "Debit Amount": 155.24}, {"Month": "2025-10", "Category": "Transport", "Debit Amount": 181.0}, {"Month": "2025-11", "Category": "Amazon", "Debit Amount": 103.42}, {"Month": "2025-11", "Category": "Eating Out", "Debit Amount": 59.48}, {"Month": "2025-11", "Category": "Groceries & Household", "Debit Amount": 286.69}, {"Month": "2025-11", "Category": "Housing & Fixed", "Debit Amount": 982.68}, {"Month": "2025-11", "Category": "Other", "Debit Amount": 425.51}, {"Month": "2025-11", "Category": "Transport", "Debit Amount": 70.1}, {"Month": "2025-12", "Category": "Amazon", "Debit Amount": 79.97}, {"Month": "2025-12", "Category": "Eating Out", "Debit Amount": 29.16}, {"Month": "2025-12", "Category": "Groceries & Household", "Debit Amount": 387.83}, {"Month": "2025-12", "Category": "Housing & Fixed", "Debit Amount": 982.68}, {"Month": "2025-12", "Category": "Other", "Debit Amount": 49.74}, {"Month": "2025-12", "Category": "Transport", "Debit Amount": 76.6}], "2026": [{"Month": "2026-01", "Category": "Eating Out", "Debit Amount": 74.59}, {"Month": "2026-01", "Category": "Groceries & Household", "Debit Amount": 302.22}, {"Month": "2026-01", "Category": "Housing & Fixed", "Debit Amount": 806.68}, {"Month": "2026-01", "Category": "Kids & Childcare", "Debit Amount": 9.0}, {"Month": "2026-01", "Category": "Other", "Debit Amount": 13.09}, {"Month": "2026-01", "Category": "Transfers", "Debit Amount": 26.0}, {"Month": "2026-01", "Category": "Transport", "Debit Amount": 68.0}, {"Month": "2026-02", "Category": "Amazon", "Debit Amount": 53.84}, {"Month": "2026-02", "Category": "Eating Out", "Debit Amount": 11.78}, {"Month": "2026-02", "Category": "Groceries & Household", "Debit Amount": 309.32}, {"Month": "2026-02", "Category": "Housing & Fixed", "Debit Amount": 983.9}, {"Month": "2026-02", "Category": "Other", "Debit Amount": 31.41}, {"Month": "2026-02", "Category": "Transfers", "Debit Amount": 200.0}, {"Month": "2026-02", "Category": "Transport", "Debit Amount": 74.7}, {"Month": "2026-03", "Category": "Eating Out", "Debit Amount": 15.3}, {"Month": "2026-03", "Category": "Groceries & Household", "Debit Amount": 301.37}, {"Month": "2026-03", "Category": "Housing & Fixed", "Debit Amount": 807.9}, {"Month": "2026-03", "Category": "Other", "Debit Amount": 1929.63}, {"Month": "2026-03", "Category": "Transfers", "Debit Amount": 150.0}, {"Month": "2026-03", "Category": "Transport", "Debit Amount": 77.4}, {"Month": "2026-04", "Category": "Amazon", "Debit Amount": 20.94}, {"Month": "2026-04", "Category": "Eating Out", "Debit Amount": 79.46}, {"Month": "2026-04", "Category": "Groceries & Household", "Debit Amount": 312.96}, {"Month": "2026-04", "Category": "Housing & Fixed", "Debit Amount": 1002.76}, {"Month": "2026-04", "Category": "Kids & Childcare", "Debit Amount": 9.7}, {"Month": "2026-04", "Category": "Other", "Debit Amount": 26.9}, {"Month": "2026-04", "Category": "Transfers", "Debit Amount": 204.6}, {"Month": "2026-04", "Category": "Transport", "Debit Amount": 76.1}, {"Month": "2026-05", "Category": "Amazon", "Debit Amount": 57.55}, {"Month": "2026-05", "Category": "Eating Out", "Debit Amount": 23.21}, {"Month": "2026-05", "Category": "Groceries & Household", "Debit Amount": 351.32}, {"Month": "2026-05", "Category": "Housing & Fixed", "Debit Amount": 1010.77}, {"Month": "2026-05", "Category": "Kids & Childcare", "Debit Amount": 15.6}, {"Month": "2026-05", "Category": "Other", "Debit Amount": 95.01}, {"Month": "2026-05", "Category": "Transport", "Debit Amount": 73.6}, {"Month": "2026-06", "Category": "Amazon", "Debit Amount": 90.95}, {"Month": "2026-06", "Category": "Eating Out", "Debit Amount": 5.65}, {"Month": "2026-06", "Category": "Groceries & Household", "Debit Amount": 462.17}, {"Month": "2026-06", "Category": "Housing & Fixed", "Debit Amount": 1010.77}, {"Month": "2026-06", "Category": "Kids & Childcare", "Debit Amount": 3.5}, {"Month": "2026-06", "Category": "Other", "Debit Amount": 153.18}, {"Month": "2026-06", "Category": "Transport", "Debit Amount": 90.4}, {"Month": "2026-07", "Category": "Amazon", "Debit Amount": 150.83}, {"Month": "2026-07", "Category": "Eating Out", "Debit Amount": 98.9}, {"Month": "2026-07", "Category": "Groceries & Household", "Debit Amount": 308.75}, {"Month": "2026-07", "Category": "Housing & Fixed", "Debit Amount": 1003.93}, {"Month": "2026-07", "Category": "Kids & Childcare", "Debit Amount": 2.0}, {"Month": "2026-07", "Category": "Other", "Debit Amount": 374.43}, {"Month": "2026-07", "Category": "Transport", "Debit Amount": 85.35}, {"Month": "2026-08", "Category": "Amazon", "Debit Amount": 121.28}, {"Month": "2026-08", "Category": "Eating Out", "Debit Amount": 34.85}, {"Month": "2026-08", "Category": "Groceries & Household", "Debit Amount": 318.9}, {"Month": "2026-08", "Category": "Housing & Fixed", "Debit Amount": 1003.93}, {"Month": "2026-08", "Category": "Kids & Childcare", "Debit Amount": 39.87}, {"Month": "2026-08", "Category": "Other", "Debit Amount": 626.48}, {"Month": "2026-08", "Category": "Transport", "Debit Amount": 144.8}, {"Month": "2026-09", "Category": "Amazon", "Debit Amount": 126.43}, {"Month": "2026-09", "Category": "Eating Out", "Debit Amount": 4.48}, {"Month": "2026-09", "Category": "Groceries & Household", "Debit Amount": 368.49}, {"Month": "2026-09", "Category": "Housing & Fixed", "Debit Amount": 1003.93}, {"Month": "2026-09", "Category": "Other", "Debit Amount": 229.83}, {"Month": "2026-09", "Category": "Transport", "Debit Amount": 60.5}, {"Month": "2026-10", "Category": "Amazon", "Debit Amount": 121.12}, {"Month": "2026-10", "Category": "Eating Out", "Debit Amount": 116.29}, {"Month": "2026-10", "Category": "Groceries & Household", "Debit Amount": 286.96}, {"Month": "2026-10", "Category": "Housing & Fixed", "Debit Amount": 1003.93}, {"Month": "2026-10", "Category": "Other", "Debit Amount": 74.18}, {"Month": "2026-10", "Category": "Transport", "Debit Amount": 82.1}, {"Month": "2026-11", "Category": "Amazon", "Debit Amount": 115.62}, {"Month": "2026-11", "Category": "Eating Out", "Debit Amount": 100.15}, {"Month": "2026-11", "Category": "Groceries & Household", "Debit Amount": 220.86}, {"Month": "2026-11", "Category": "Housing & Fixed", "Debit Amount": 963.18}, {"Month": "2026-11", "Category": "Kids & Childcare", "Debit Amount": 26.97}, {"Month": "2026-11", "Category": "Other", "Debit Amount": 46.82}, {"Month": "2026-11", "Category": "Transport", "Debit Amount": 47.35}]}, "top": {"2024": [{"name": "NATWEST BANK", "amount": 7116.12}, {"name": "LIDL GB POOLE", "amount": 2729.89}, {"name": "BCP COUNCIL - POOL", "amount": 1529.14}, {"name": "LITTLE STARS EDUCA", "amount": 1383.0}, {"name": "SO ENERGY", "amount": 766.34}, {"name": "ITTLE STARS EDUCAT", "amount": 741.0}, {"name": "BRISTOLWESSEXWATER", "amount": 695.0}, {"name": "MOREBUS", "amount": 580.0}, {"name": "VIRGIN MEDIA PYMTS", "amount": 548.42}, {"name": "FIX-IT WINDOWS & D", "amount": 479.03}, {"name": "AMZNMktplace*TP1YN", "amount": 312.46}, {"name": "TESCO STORES 3047", "amount": 305.65}], "2025": [{"name": "NATWEST BANK", "amount": 7116.12}, {"name": "LIDL GB POOLE", "amount": 2096.77}, {"name": "WOODLEY & ASSOCIAT", "amount": 1982.02}, {"name": "BCP COUNCIL - POOL", "amount": 1731.51}, {"name": "LIDL GB BRANKSOME", "amount": 989.81}, {"name": "SO ENERGY", "amount": 840.69}, {"name": "LITTLE STARS EDUCA", "amount": 837.0}, {"name": "BRISTOLWESSEXWATER", "amount": 783.0}, {"name": "MOREBUS", "amount": 631.6}, {"name": "VIRGIN MEDIA PYMTS", "amount": 592.86}, {"name": "TESCO STORES 3047", "amount": 443.12}, {"name": "GO SOUTH COAST", "amount": 333.4}], "2026": [{"name": "NATWEST BANK", "amount": 6523.11}, {"name": "LIDL GB BRANKSOME", "amount": 3195.75}, {"name": "WOODLEY & ASSOCIAT", "amount": 1927.64}, {"name": "BCP COUNCIL - POOL", "amount": 1689.99}, {"name": "BRISTOLWESSEXWATER", "amount": 846.0}, {"name": "SO ENERGY", "amount": 764.98}, {"name": "VIRGIN MEDIA PYMTS", "amount": 529.89}, {"name": "MOREBUS", "amount": 409.0}, {"name": "PLUMBERLY LTD", "amount": 366.0}, {"name": "AVIVA LIFE", "amount": 247.71}, {"name": "GO SOUTH COAST BUS", "amount": 185.2}, {"name": "PRESTIGE GARAGE DO", "amount": 158.0}]}, "proj": {"Housing & Fixed": 13863, "Groceries & Household": 4020, "Other": 4085, "Transport": 998, "Amazon": 974, "Eating Out": 641, "Kids & Childcare": 121}};
+const cats = ["Housing & Fixed","Groceries & Household","Other","Transport","Amazon","Eating Out","Kids & Childcare"];
+const colors = {"Housing & Fixed":"#f43f5e","Groceries & Household":"#22c55e","Other":"#a78bfa","Transport":"#38bdf8","Amazon":"#fbbf24","Eating Out":"#fb923c","Kids & Childcare":"#e879f9"};
+let years = new Set(["2024","2025","2026"]);
+let cat = "all";
+
+function tot(y, c) {
+  if (y === "2027") return DATA.proj[c] || 0;
+  return (DATA.monthly[y]||[]).filter(r => r.Category===c && r.Category!=="Transfers").reduce((s,r)=>s+r["Debit Amount"],0);
+}
+function ytot(y) {
+  if (y==="2027") return Object.values(DATA.proj).reduce((a,b)=>a+b,0);
+  return cats.reduce((s,c)=>s+tot(y,c),0);
+}
+
+function draw() {
+  const ys = [...years].sort();
+  const t = ys.reduce((s,y)=>s+(cat==="all"?ytot(y):tot(y,cat)),0);
+  document.getElementById("summary").textContent = "£"+Math.round(t).toLocaleString();
+  document.getElementById("detail").textContent = ys.join(" + ") + (cat!=="all"?" · "+cat:"");
+
+  let bars = "";
+  cats.forEach(c => {
+    const v = ys.reduce((s,y)=>s+tot(y,c),0);
+    const max = Math.max(...cats.map(cc=>ys.reduce((s,y)=>s+tot(y,cc),0))) || 1;
+    bars += `<div>${c} £${Math.round(v).toLocaleString()}<div class="bar"><span style="width:${(v/max*100)}%;background:${colors[c]}"></span></div></div>`;
+  });
+  document.getElementById("bars").innerHTML = bars;
+
+  let html = "<tr><th>Category</th>"+ys.map(y=>"<th>"+y+"</th>").join("")+"</tr>";
+  cats.forEach(c => {
+    html += "<tr><td>"+c+"</td>"+ys.map(y=>"<td>£"+Math.round(tot(y,c)).toLocaleString()+"</td>").join("")+"</tr>";
+  });
+  html += "<tr style='font-weight:600'><td>Total</td>"+ys.map(y=>"<td>£"+Math.round(ytot(y)).toLocaleString()+"</td>").join("")+"</tr>";
+  document.getElementById("table").innerHTML = html;
+
+  const ms = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+  const real = ys.filter(y=>y!=="2027");
+  let mhtml = "<tr><th>Month</th>"+real.map(y=>"<th>"+y+"</th>").join("")+"</tr>";
+  ms.forEach(m => {
+    mhtml += "<tr><td>"+m+"</td>"+real.map(y=>{
+      const rows = (DATA.monthly[y]||[]).filter(r=>r.Month===y+"-"+m);
+      const v = cat==="all" ? rows.filter(r=>r.Category!=="Transfers").reduce((s,r)=>s+r["Debit Amount"],0)
+                             : rows.filter(r=>r.Category===cat).reduce((s,r)=>s+r["Debit Amount"],0);
+      return "<td>£"+Math.round(v).toLocaleString()+"</td>";
+    }).join("")+"</tr>";
+  });
+  document.getElementById("months").innerHTML = mhtml;
+
+  let merch = "";
+  real.forEach(y => {
+    const list = (DATA.top[y]||[]).slice(0,8).map(m=>`<tr><td>${m.name}</td><td>£${Math.round(m.amount).toLocaleString()}</td></tr>`).join("");
+    merch += `<h3 style="margin:8px 0 4px;font-size:0.95rem">${y}</h3><table>${list}</table>`;
+  });
+  document.getElementById("merchants").innerHTML = merch || "Select a past year";
+}
+
+document.querySelectorAll("[data-y]").forEach(b => {
+  b.onclick = () => {
+    const y = b.dataset.y;
+    if (years.has(y)) { if (years.size>1) years.delete(y); }
+    else years.add(y);
+    b.classList.toggle("active", years.has(y));
+    draw();
+  };
+});
+document.getElementById("cat").onchange = e => { cat = e.target.value; draw(); };
+draw();
+</script>
+</body>
+</html>
